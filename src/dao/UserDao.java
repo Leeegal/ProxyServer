@@ -2,7 +2,10 @@ package dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
+import domain.FileVo;
 import domain.UserVo;
 
 @Repository
@@ -89,5 +93,22 @@ public class UserDao {
 		jdbcTemplate.update(sqlStr, new Object[] { id });
 	}
 	
+	public boolean insertFile(FileVo fileVo) {
+		String sqlStr = " insert into file(id,fileName,date,size,path,desPath,conditionPath) values(?,?,?,?,?,?,?) ";
+		String id = fileVo.getId();
+		String fileName = fileVo.getFileName();
+		String date = fileVo.getDate();
+		String size = fileVo.getSize();
+		String path = fileVo.getPath();
+		String desPath = fileVo.getDesPath();
+		String conditionPath = fileVo.getConditionPath();
+		
+		try {
+			jdbcTemplate.update(sqlStr, new Object[] { id, fileName, date, size, path, desPath, conditionPath });
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
 	
 }
