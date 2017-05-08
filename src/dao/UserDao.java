@@ -88,4 +88,6 @@ public class UserDao {
 		sqlStr = "DELETE FROM moban WHERE id = ?";
 		jdbcTemplate.update(sqlStr, new Object[] { id });
 	}
+	
+	
 }

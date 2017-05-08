@@ -1,48 +1,48 @@
 package web;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
-import service.UserService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
-import domain.UserVo;
+import Encryption.CommonFileManager;
+import SecretCloudProxy.Ciphertext;
+import SecretCloudProxy.ShareCipher;
 
 @Controller
 public class UserAction {
-	@Autowired
-	private UserService userService;
-	@RequestMapping(value = "/userMgr.htm")
-	public ModelAndView userMgr(HttpServletRequest request) {
-		List<UserVo> userList=userService.allUsers();
-		request.getSession().setAttribute("userList", userList);
-		return new ModelAndView("user");
-	}
-	@RequestMapping(value = "/delUser.htm")
-	public ModelAndView delUser(HttpServletRequest request) {
-		userService.delUser(request.getParameter("userId"));
-		List<UserVo> userList=userService.allUsers();
-		request.getSession().setAttribute("userList", userList);
-		return new ModelAndView("user");
-	}
-	@RequestMapping(value = "/toUser.htm")
-	public ModelAndView toUser(HttpServletRequest request) {
-		userService.toUser(request.getParameter("userId"));
-		List<UserVo> userList=userService.allUsers();
-		request.getSession().setAttribute("userList", userList);
-		return new ModelAndView("user");
-	}
-	@RequestMapping(value = "/toAdmin.htm")
-	public ModelAndView toAdmin(HttpServletRequest request) {
-		userService.toAdmin(request.getParameter("userId"));
-		List<UserVo> userList=userService.allUsers();
-		request.getSession().setAttribute("userList", userList);
-		return new ModelAndView("user");
+	@RequestMapping(value = "/uploadFile.htm")
+	@ResponseBody
+	public byte[] uploadFile(HttpServletRequest request) {
+		System.out.println("进入uploadFile");
+		String jsonString;
+		Map<String, String> resMap = new HashMap<String, String>();
+		
+		String id = request.getParameter("id");
+		String file = request.getParameter("file");
+		JSONObject o = JSONObject.parseObject(file);
+		byte[] cipher = (byte[])CommonFileManager.bytesToObject((o.getBytes("cipher")));
+		ShareCipher DEScipher = (ShareCipher)CommonFileManager.bytesToObject((o.getBytes("DEScipher")));
+		Ciphertext condition = (Ciphertext)CommonFileManager.bytesToObject((o.getBytes("condition")));
+		
+		try {
+			resMap.put("error_no", "0");
+			resMap.put("error_info", "成功");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			resMap.put("error_no", "-1");
+			resMap.put("error_info", "失败");
+		}
+		
+		jsonString = JSON.toJSONString(resMap);
+		return jsonString.getBytes();
 	}
 }
