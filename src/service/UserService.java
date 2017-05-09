@@ -90,7 +90,14 @@ public class UserService {
 		if(!userDao.insertFile(fileVo)) {
 			return false;
 		}
-		
 		return true;
+	}
+	
+	public List<FileVo> allFilesForUser(String id) {
+		return userDao.findAllFilesForUser(id);
+	}
+	
+	public List<FileVo> sharedFilesForUser(String id) {
+		return userDao.findSharedFilesForUser(id);
 	}
 }
