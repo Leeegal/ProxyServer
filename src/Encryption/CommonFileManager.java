@@ -61,11 +61,15 @@ public class CommonFileManager {
 	public static void saveBytesToFilepath(byte[] bfile, String filePath) throws Exception {  
         BufferedOutputStream bos = null;
         FileOutputStream fos = null;  
-        File file = null;
         try {
-            File dir = new File(filePath);  
-            if(!dir.exists() && dir.isDirectory()){//判断文件目录是否存在  
-                dir.mkdirs();  
+        	File file =new File(filePath);
+    		File superFile = file;
+    		if(!file.isDirectory()) {    //file是一个文件，则获取它的上级目录
+    			String superPath = filePath.substring(0, filePath.lastIndexOf("/"));
+    			superFile = new File(superPath);
+    		}
+            if(!superFile.exists()){     //判断文件夹是否存在，不存在就新建文件夹
+            	superFile.mkdirs();  
             }
             file = new File(filePath);  
             fos = new FileOutputStream(file);  

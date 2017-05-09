@@ -111,4 +111,33 @@ public class UserDao {
 		return true;
 	}
 	
+	public List<FileVo> findAllFilesForUser(String id) {
+		String sqlStr = "SELECT * FROM file WHERE id =? ";
+		final List<FileVo> list = new ArrayList<FileVo>();
+		jdbcTemplate.query(sqlStr, new Object[] { id }, new RowCallbackHandler() {
+			public void processRow(ResultSet rs) throws SQLException {
+				FileVo file = new FileVo();
+				file.setFileName(rs.getString("fileName"));
+				file.setSize(rs.getString("size"));
+				file.setDate(rs.getString("date"));
+				list.add(file);
+			}
+		});
+		return list;
+	}
+	
+	public List<FileVo> findSharedFilesForUser(String id) {
+		String sqlStr = "SELECT * FROM file WHERE id =? ";
+		final List<FileVo> list = new ArrayList<FileVo>();
+		jdbcTemplate.query(sqlStr, new Object[] { id }, new RowCallbackHandler() {
+			public void processRow(ResultSet rs) throws SQLException {
+				FileVo file = new FileVo();
+				file.setFileName(rs.getString("fileName"));
+				file.setSize(rs.getString("size"));
+				file.setDate(rs.getString("date"));
+				list.add(file);
+			}
+		});
+		return list;
+	}
 }
