@@ -6,7 +6,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +16,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
 import domain.FileVo;
+import domain.RkVo;
 import domain.UserVo;
 
 @Repository
@@ -126,12 +129,13 @@ public class UserDao {
 		return list;
 	}
 	
-	public List<FileVo> findSharedFilesForUser(String id) {
-		String sqlStr = "SELECT * FROM file WHERE id =? ";
-		final List<FileVo> list = new ArrayList<FileVo>();
+	public List<RkVo> findSharedFilesForUser(String id) {
+		String sqlStr = "SELECT * FROM rk WHERE author =? ";
+		final List<RkVo> list = new ArrayList<RkVo>();
 		jdbcTemplate.query(sqlStr, new Object[] { id }, new RowCallbackHandler() {
 			public void processRow(ResultSet rs) throws SQLException {
-				FileVo file = new FileVo();
+				RkVo file = new RkVo();
+				file.setReceiver(rs.getString("receiver"));
 				file.setFileName(rs.getString("fileName"));
 				file.setSize(rs.getString("size"));
 				file.setDate(rs.getString("date"));
@@ -139,5 +143,81 @@ public class UserDao {
 			}
 		});
 		return list;
+	}
+	
+	public List<RkVo> findReceiveFilesForUser(String id) {
+		String sqlStr = "SELECT * FROM rk WHERE receiver =? ";
+		final List<RkVo> list = new ArrayList<RkVo>();
+		jdbcTemplate.query(sqlStr, new Object[] { id }, new RowCallbackHandler() {
+			public void processRow(ResultSet rs) throws SQLException {
+				RkVo file = new RkVo();
+				file.setAuthor(rs.getString("author"));
+				file.setFileName(rs.getString("fileName"));
+				file.setSize(rs.getString("size"));
+				file.setDate(rs.getString("date"));
+				list.add(file);
+			}
+		});
+		return list;
+	}
+	
+	public Map<String, Object> findDESCipherPath(String id, String fileName) {
+		String sqlStr = "SELECT desPath FROM file WHERE id =? and fileName=? ";
+		Map<String, Object> map = new HashMap<String, Object>();
+		map = jdbcTemplate.queryForMap(sqlStr, new Object[] { id, fileName });
+		return map;
+	}
+	
+	public Map<String, Object> findCipherPath(String id, String fileName) {
+		String sqlStr = "SELECT path FROM file WHERE id =? and fileName=? ";
+		Map<String, Object> map = new HashMap<String, Object>();
+		map = jdbcTemplate.queryForMap(sqlStr, new Object[] { id, fileName });
+		return map;
+	}
+	
+	public Map<String, Object> findConditionPath(String id, String fileName) {
+		String sqlStr = "SELECT conditionPath FROM file WHERE id =? and fileName=? ";
+		Map<String, Object> map = new HashMap<String, Object>();
+		map = jdbcTemplate.queryForMap(sqlStr, new Object[] { id, fileName });
+		return map;
+	}
+	
+	public Map<String, Object> findRkPath(String author, String reveiver, String fileName) {
+		String sqlStr = "SELECT rkPath FROM rk WHERE author =? and reveiver=? and fileName=? ";
+		Map<String, Object> map = new HashMap<String, Object>();
+		map = jdbcTemplate.queryForMap(sqlStr, new Object[] { author, reveiver, fileName });
+		return map;
+	}
+	
+	public RkVo findInfoForRkVo(String id, String fileName) {
+		String sqlStr = "SELECT * FROM file WHERE id =? and fileName=? ";
+		final RkVo rkVo = new RkVo();
+		jdbcTemplate.query(sqlStr, new Object[] { id, fileName }, new RowCallbackHandler() {
+			public void processRow(ResultSet rs) throws SQLException {
+				rkVo.setSize(rs.getString("size"));
+				rkVo.setPath(rs.getString("path"));
+				rkVo.setDesPath(rs.getString("desPath"));
+			}
+		});
+		return rkVo;
+	}
+	
+	public boolean insertRk(RkVo rkVo) {
+		String sqlStr = " insert into rk(author,fileName,receiver,date,size,path,desPath,rkPath) values(?,?,?,?,?,?,?,?) ";
+		String author = rkVo.getAuthor();
+		String receiver = rkVo.getReceiver();
+		String fileName = rkVo.getFileName();
+		String date = rkVo.getDate();
+		String size = rkVo.getSize();
+		String path = rkVo.getPath();
+		String desPath = rkVo.getDesPath();
+		String rkPath = rkVo.getrkPath();
+		
+		try {
+			jdbcTemplate.update(sqlStr, new Object[] { author, fileName, receiver, date, size, path, desPath, rkPath });
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 }

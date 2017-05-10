@@ -16,4 +16,12 @@ public class ShareCipher implements Serializable {
 		this.grt = grt.toBytes();
 		this.cipher = cipher;
 	}
+	
+	public byte[] getgrt() {
+		return this.grt;
+	}
+	
+	public byte[] getCipher() {
+		return this.cipher;
+	}
 }

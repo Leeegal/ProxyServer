@@ -1,12 +1,11 @@
 package Encryption;
 
-import SecretCloudProxy.AffixDef;
-
 public class ProxyDef {
 	private static String reencryptionKeyPath = "/Users/chencaixia/SecretCloud/Proxy/reencryptionKeys/";
 	private static String DESkeyPath = "/Users/chencaixia/SecretCloud/Proxy/DESkeys/";
 	private static String ciphersPath = "/Users/chencaixia/SecretCloud/Proxy/ciphers/";
 	private static String conditionPath = "/Users/chencaixia/SecretCloud/Proxy/conditions/";
+	public static final String paramsPath = "/Users/chencaixia/SecretCloud/Proxy/params/";
 	
 	public static String getCiphersPath(String id, String fileName) {
 		String path = ciphersPath + id + "/" + fileName;
@@ -19,9 +18,8 @@ public class ProxyDef {
 		return path;
 	}
 	
-	public static String getReencryptionKeyPath(String id, String receiverID, String fileName) {
-		fileName = fileName.replace(".", "");
-		String path = reencryptionKeyPath + AffixDef.reencryptionKeyAffix(id, receiverID, fileName);
+	public static String getReencryptionKeyPath(String rkName) {
+		String path = reencryptionKeyPath + rkName;
 		return path;
 	}
 	

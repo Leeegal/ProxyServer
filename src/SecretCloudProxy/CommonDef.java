@@ -1,6 +1,6 @@
 package SecretCloudProxy;
 
-public class AffixDef {
+public class CommonDef {
 	public static final String paramsAffix = "params.dat";
 	
 	public static String partKeyAffix(String ID) {
@@ -16,6 +16,9 @@ public class AffixDef {
 	}
 	
 	public static String reencryptionKeyAffix(String ownerID, String receiverID, String fileName) {
-		return ownerID + "-" +receiverID + fileName + "_reencryptionKey.dat";
+		fileName = fileName.replace(".", "");
+		return ownerID + "-" +receiverID + "-" + fileName + "_rk.dat";
 	}
+	
+	public static final String pkPath = "/Users/chencaixia/SecretCloud/Client/key/";
 }
