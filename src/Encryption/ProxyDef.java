@@ -6,6 +6,7 @@ public class ProxyDef {
 	private static String ciphersPath = "/Users/chencaixia/SecretCloud/Proxy/ciphers/";
 	private static String conditionPath = "/Users/chencaixia/SecretCloud/Proxy/conditions/";
 	public static final String paramsPath = "/Users/chencaixia/SecretCloud/Proxy/params/";
+	public static final String tempPath = "/Users/chencaixia/SecretCloud/Proxy/temp";
 	
 	public static String getCiphersPath(String id, String fileName) {
 		String path = ciphersPath + id + "/" + fileName;

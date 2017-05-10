@@ -2,10 +2,7 @@ package dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +180,7 @@ public class UserDao {
 	}
 	
 	public Map<String, Object> findRkPath(String author, String reveiver, String fileName) {
-		String sqlStr = "SELECT rkPath FROM rk WHERE author =? and reveiver=? and fileName=? ";
+		String sqlStr = "SELECT rkPath FROM rk WHERE author =? and receiver=? and fileName=? ";
 		Map<String, Object> map = new HashMap<String, Object>();
 		map = jdbcTemplate.queryForMap(sqlStr, new Object[] { author, reveiver, fileName });
 		return map;

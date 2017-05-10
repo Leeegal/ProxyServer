@@ -52,32 +52,10 @@ public class UserService {
 		userDao.toAdmin(id);
 	}
 	
-	public boolean saveFile(String id, String fileName, JSONObject o) {
-		byte[] cipher;
-		ShareCipher DEScipher;
-		Ciphertext condition;
-		try {
-			cipher = (byte[])CommonFileManager.bytesToObject((o.getBytes("cipher")));
-			DEScipher = (ShareCipher)CommonFileManager.bytesToObject((o.getBytes("DEScipher")));
-			condition = (Ciphertext)CommonFileManager.bytesToObject((o.getBytes("condition")));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-		
+	public boolean insertFile(String id, String fileName) {
 		String filePath = ProxyDef.getCiphersPath(id, fileName);
 		String DESkeyPath = ProxyDef.getDESkeyPath(id, fileName);
 		String conditionPath = ProxyDef.getConditionPath(id, fileName);
-		try {     //将各文件存入数据库(即文件夹)
-			CommonFileManager.writeObjectToFile(cipher, filePath);
-			CommonFileManager.writeObjectToFile(DEScipher, DESkeyPath);
-			CommonFileManager.writeObjectToFile(condition, conditionPath);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
 		File file = new File(filePath);
 		String size = FormetFileSize(file.length());
 		

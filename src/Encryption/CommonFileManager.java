@@ -11,7 +11,7 @@ import java.io.ObjectOutputStream;
 
 public class CommonFileManager {
 	
-	public static void writeObjectToFile(Object obj, String path) throws Exception {
+	public static File writeObjectToFile(Object obj, String path) throws Exception {
 		File file =new File(path);
 		File superFile = file;
 		if(!file.isDirectory()) {   //file是一个文件，则获取它的上级目录
@@ -27,6 +27,7 @@ public class CommonFileManager {
     	objOut.writeObject(obj);
     	objOut.flush();
     	objOut.close();
+    	return file;
 	}
 	
 	public static Object readObjectFromFile(String path) throws Exception {
