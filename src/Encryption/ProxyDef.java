@@ -1,5 +1,7 @@
 package Encryption;
 
+import java.io.File;
+
 public class ProxyDef {
 	private static String reencryptionKeyPath = "/Users/chencaixia/SecretCloud/Proxy/reencryptionKeys/";
 	private static String DESkeyPath = "/Users/chencaixia/SecretCloud/Proxy/DESkeys/";
@@ -9,6 +11,10 @@ public class ProxyDef {
 	public static final String tempPath = "/Users/chencaixia/SecretCloud/Proxy/temp";
 	
 	public static String getCiphersPath(String id, String fileName) {
+		File file = new File(ciphersPath + id);
+		if (!file.exists()) { // 判断文件夹是否存在，不存在就新建文件夹
+			file.mkdirs();
+		}
 		String path = ciphersPath + id + "/" + fileName;
 		return path;
 	}

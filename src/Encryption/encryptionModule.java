@@ -1,6 +1,7 @@
 package Encryption;
 
 import SecretCloudProxy.CommonDef;
+import SecretCloudProxy.CommonFileManager;
 import SecretCloudProxy.PublicParameters;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
@@ -9,13 +10,12 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 public class encryptionModule {
 	private static Pairing pairing;
 	private static PublicParameters params;
-	private static String paramsPath = ProxyDef.paramsPath;
 	private static Element g;
 	private static Element gps;
 	
 	public encryptionModule() throws Exception {
-		pairing = PairingFactory.getPairing(paramsPath + "a.properties");
-		params = (PublicParameters)CommonFileManager.readObjectFromFile(paramsPath + CommonDef.paramsAffix);
+		pairing = PairingFactory.getPairing(CommonDef.propertiesPath);
+		params = (PublicParameters)CommonFileManager.readObjectFromFile(CommonDef.paramsPath);
 		g = newG1ElementFromBytes(params.g).getImmutable();
 		gps = newG1ElementFromBytes(params.gps).getImmutable();
 	}

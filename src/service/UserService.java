@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-import Encryption.CommonFileManager;
 import Encryption.ProxyDef;
 import SecretCloudProxy.CommonDef;
+import SecretCloudProxy.CommonFileManager;
 import SecretCloudProxy.Ciphertext;
 import SecretCloudProxy.ReencryptionKey;
 import SecretCloudProxy.ShareCipher;
@@ -107,15 +107,15 @@ public class UserService {
 		return desCipher;
 	}
 	
-	public byte[] getCipher(String id, String fileName) {
-		byte[] cipher = null;
+	public File getCipher(String id, String fileName) {
+		File cipher = null;
 		//获取原始密文路径
 		Map<String, Object> map = userDao.findCipherPath(id, fileName);
 		String path;
 		if(map.size() > 0 && map.containsKey("path")) {
 			path = (String)map.get("path");
 			try {
-				cipher = (byte[])CommonFileManager.readObjectFromFile(path);
+				cipher = new File(path);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -199,6 +199,7 @@ public class UserService {
 			ReencryptionKey rk;
 			try {
 				rk = (ReencryptionKey)CommonFileManager.bytesToObject(rkByte);
+				System.out.println();
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

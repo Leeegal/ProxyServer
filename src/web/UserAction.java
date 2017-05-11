@@ -23,6 +23,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,11 +34,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import Encryption.CommonFileManager;
 import Encryption.ProxyDef;
 import Encryption.ReencryptTask;
 import Encryption.encryptionModule;
 import SecretCloudProxy.Ciphertext;
+import SecretCloudProxy.CommonFileManager;
 import SecretCloudProxy.ReencryptionCipher;
 import SecretCloudProxy.ReencryptionKey;
 import SecretCloudProxy.ShareCipher;
@@ -52,7 +53,7 @@ public class UserAction {
 
 	@RequestMapping(value = "/uploadFile.htm")
 	@ResponseBody
-	public byte[] uploadFile(HttpServletRequest request) {
+	public byte[] uploadFile(HttpServletRequest request, HttpServletResponse response) {
 		String jsonString;
 		Map<String, String> resMap = new HashMap<String, String>();
 		boolean status = true;
@@ -129,6 +130,9 @@ public class UserAction {
 			if (userService.insertFile(id, fileName)) {
 				resMap.put("error_no", "0");
 				resMap.put("error_info", "上传成功");
+			} else {
+				resMap.put("error_no", "-1");
+				resMap.put("error_info", "上传失败");
 			}
 		} else {
 			resMap.put("error_no", "-1");
@@ -313,15 +317,15 @@ public class UserAction {
 		String receiver = request.getParameter("receiver");
 		String fileName = request.getParameter("fileName");
 		String author = request.getParameter("author");
-		ShareCipher desCipher = userService.getDESCipher(author, fileName);
-		ReencryptionKey rk = userService.getRk(author, receiver, fileName);
-
+		ShareCipher desCipher = userService.getDESCipher(author, fileName);  
+		ReencryptionKey rk = userService.getRk(author, receiver, fileName);  
+		
 		encryptionModule module;
 		try {
 			module = new encryptionModule();
 			ReencryptionCipher reencryptionCipher = ReencryptTask.reencryptMsg(module, desCipher, rk);
 			File file = CommonFileManager.writeObjectToFile(reencryptionCipher,
-					ProxyDef.tempPath + "reencryptionCipher.dat");
+					ProxyDef.tempPath + "/" + "reencryptionCipher.dat");
 			response.setContentLength((int) file.length());
 			response.setHeader("Accept-Ranges", "bytes");
 			int readLength = 0;
@@ -354,48 +358,93 @@ public class UserAction {
 		}
 		response.setStatus(0);
 	}
+
+	@RequestMapping(value = "/downloadCipher.htm")
+	@ResponseBody
+	public void downloadCipher(HttpServletRequest request, HttpServletResponse response) {
+		int BUFFER_SIZE = 4096;
+		InputStream in = null;
+		OutputStream out = null;
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("application/octet-stream");
+
+		String fileName = request.getParameter("fileName");
+		String author = request.getParameter("author");
+		File cipher = userService.getCipher(author, fileName);
+		
+		try {
+			response.setContentLength((int) cipher.length());
+			response.setHeader("Accept-Ranges", "bytes");
+			int readLength = 0;
+			in = new BufferedInputStream(new FileInputStream(cipher), BUFFER_SIZE);
+			out = new BufferedOutputStream(response.getOutputStream());
+			byte[] buffer = new byte[BUFFER_SIZE];
+			while ((readLength = in.read(buffer)) > 0) {
+				byte[] bytes = new byte[readLength];
+				System.arraycopy(buffer, 0, bytes, 0, readLength);
+				out.write(bytes);
+			}
+			out.flush();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+				}
+			}
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+
+	@RequestMapping(value = "/testDownloadFile.htm")
+	@ResponseBody
+	public void testDownloadFile(HttpServletRequest request, HttpServletResponse response) {
+		int BUFFER_SIZE = 4096;
+		InputStream in = null;
+		OutputStream out = null;
+		String fileName = request.getHeader("fileName");
+		try {
+			response.setCharacterEncoding("utf-8");
+//			response.setContentType("application/octet-stream; charset=utf-8");
+//			String downloadPath = "/Users/chencaixia/files/毕设/工作成果/方案设计/代理重加密论文方案概述.pptx";
+			String downloadPath = "/Users/chencaixia/SecretCloud/Proxy/ciphers/xiao/房子.jpg";
+			File file = new File(downloadPath);
+			response.setContentLength((int) file.length());
+			response.setHeader("Accept-Ranges", "bytes");
+			int readLength = 0;
+			in = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
+			out = new BufferedOutputStream(response.getOutputStream());
+			byte[] buffer = new byte[BUFFER_SIZE];
+			while ((readLength = in.read(buffer)) > 0) {
+				byte[] bytes = new byte[readLength];
+				System.arraycopy(buffer, 0, bytes, 0, readLength);
+				out.write(bytes);
+			}
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+				}
+			}
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		response.setStatus(0);
+	}
 }
-//
-//	@RequestMapping(value = "/testDownloadFile.htm")
-//	@ResponseBody
-//	public void testDownloadFile(HttpServletRequest request, HttpServletResponse response) {
-//		int BUFFER_SIZE = 4096;
-//		InputStream in = null;
-//		OutputStream out = null;
-//		try {
-//			response.setCharacterEncoding("utf-8");
-//			response.setContentType("application/octet-stream");
-//			String downloadPath = "/Users/chencaixia/files/毕设/工作成果/方案设计/";
-//			File file = new File(downloadPath + "/" + fileName);
-//			response.setContentLength((int) file.length());
-//			response.setHeader("Accept-Ranges", "bytes");
-//			int readLength = 0;
-//			in = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
-//			out = new BufferedOutputStream(response.getOutputStream());
-//			byte[] buffer = new byte[BUFFER_SIZE];
-//			while ((readLength = in.read(buffer)) > 0) {
-//				byte[] bytes = new byte[readLength];
-//				System.arraycopy(buffer, 0, bytes, 0, readLength);
-//				out.write(bytes);
-//			}
-//			out.flush();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			response.setStatus(-1);
-//		} finally {
-//			if (in != null) {
-//				try {
-//					in.close();
-//				} catch (IOException e) {
-//				}
-//			}
-//			if (out != null) {
-//				try {
-//					out.close();
-//				} catch (IOException e) {
-//				}
-//			}
-//		}
-//		response.setStatus(0);
-//	}
-//}
