@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,13 +22,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -205,7 +201,7 @@ public class UserAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			resMap.put("error_no", "-1".getBytes());
-			resMap.put("error_info", "获取已分享文件列表失败".getBytes());
+			resMap.put("error_info", "刷新已分享文件列表失败".getBytes());
 		}
 
 		jsonString = JSON.toJSONString(resMap);
@@ -240,7 +236,7 @@ public class UserAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			resMap.put("error_no", "-1".getBytes());
-			resMap.put("error_info", "获取收到分享文件列表失败".getBytes());
+			resMap.put("error_info", "刷新收到分享文件列表失败".getBytes());
 		}
 
 		jsonString = JSON.toJSONString(resMap);
@@ -317,9 +313,9 @@ public class UserAction {
 		String receiver = request.getParameter("receiver");
 		String fileName = request.getParameter("fileName");
 		String author = request.getParameter("author");
-		ShareCipher desCipher = userService.getDESCipher(author, fileName);  
-		ReencryptionKey rk = userService.getRk(author, receiver, fileName);  
-		
+		ShareCipher desCipher = userService.getDESCipher(author, fileName);
+		ReencryptionKey rk = userService.getRk(author, receiver, fileName);
+
 		encryptionModule module;
 		try {
 			module = new encryptionModule();
@@ -371,7 +367,7 @@ public class UserAction {
 		String fileName = request.getParameter("fileName");
 		String author = request.getParameter("author");
 		File cipher = userService.getCipher(author, fileName);
-		
+
 		try {
 			response.setContentLength((int) cipher.length());
 			response.setHeader("Accept-Ranges", "bytes");
@@ -404,19 +400,21 @@ public class UserAction {
 		}
 	}
 
-	@RequestMapping(value = "/testDownloadFile.htm")
+	@RequestMapping(value = "/downloadDesCipher.htm")
 	@ResponseBody
-	public void testDownloadFile(HttpServletRequest request, HttpServletResponse response) {
+	public void downloadDesCipher(HttpServletRequest request, HttpServletResponse response) {
 		int BUFFER_SIZE = 4096;
 		InputStream in = null;
 		OutputStream out = null;
-		String fileName = request.getHeader("fileName");
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("application/octet-stream");
+
+		String fileName = request.getParameter("fileName");
+		String author = request.getParameter("author");
+		ShareCipher desCipher = userService.getDESCipher(author, fileName);
+
 		try {
-			response.setCharacterEncoding("utf-8");
-//			response.setContentType("application/octet-stream; charset=utf-8");
-//			String downloadPath = "/Users/chencaixia/files/毕设/工作成果/方案设计/代理重加密论文方案概述.pptx";
-			String downloadPath = "/Users/chencaixia/SecretCloud/Proxy/ciphers/xiao/房子.jpg";
-			File file = new File(downloadPath);
+			File file = CommonFileManager.writeObjectToFile(desCipher, ProxyDef.tempPath + "/" + "desCipher.dat");
 			response.setContentLength((int) file.length());
 			response.setHeader("Accept-Ranges", "bytes");
 			int readLength = 0;
@@ -429,8 +427,9 @@ public class UserAction {
 				out.write(bytes);
 			}
 			out.flush();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		} finally {
 			if (in != null) {
 				try {
@@ -445,6 +444,85 @@ public class UserAction {
 				}
 			}
 		}
-		response.setStatus(0);
+	}
+	
+	@RequestMapping(value = "/deleteFile.htm")
+	@ResponseBody
+	public byte[] deleteFile(HttpServletRequest request) {
+		String jsonString;
+		Map<String, String> resMap = new HashMap<String, String>();
+
+		String id = request.getParameter("id");
+		String fileName = request.getParameter("fileName");
+		String password = request.getParameter("password");
+		if(userService.hasMatchUser(id, password)) {
+			if (userService.deleteFile(id, fileName)) {
+				resMap.put("error_no", "0");
+				resMap.put("error_info", "成功删除文件");
+			} else {
+				resMap.put("error_no", "-1");
+				resMap.put("error_info", "删除文件失败");
+			}
+		} else {
+			resMap.put("error_no", "1");
+			resMap.put("error_info", "密码错误，没有删除行权限");
+		}
+
+		jsonString = JSON.toJSONString(resMap);
+		return jsonString.getBytes();
+	}
+	
+	@RequestMapping(value = "/deleteShare.htm")
+	@ResponseBody
+	public byte[] deleteShare(HttpServletRequest request) {
+		String jsonString;
+		Map<String, String> resMap = new HashMap<String, String>();
+
+		String author = request.getParameter("author");
+		String fileName = request.getParameter("fileName");
+		String receiver = request.getParameter("receiver");
+		String password = request.getParameter("password");
+		if(userService.hasMatchUser(author, password)) {
+			if (userService.deleteShare(author, receiver, fileName)) {
+				resMap.put("error_no", "0");
+				resMap.put("error_info", "成功删除分享");
+			} else {
+				resMap.put("error_no", "-1");
+				resMap.put("error_info", "删除分享失败");
+			}
+		} else {
+			resMap.put("error_no", "1");
+			resMap.put("error_info", "密码错误，没有删除权限");
+		}
+
+		jsonString = JSON.toJSONString(resMap);
+		return jsonString.getBytes();
+	}
+	
+	@RequestMapping(value = "/deleteReceive.htm")
+	@ResponseBody
+	public byte[] deleteReceive(HttpServletRequest request) {
+		String jsonString;
+		Map<String, String> resMap = new HashMap<String, String>();
+
+		String author = request.getParameter("author");
+		String fileName = request.getParameter("fileName");
+		String receiver = request.getParameter("receiver");
+		String password = request.getParameter("password");
+		if(userService.hasMatchUser(receiver, password)) {
+			if (userService.deleteShare(author, receiver, fileName)) {
+				resMap.put("error_no", "0");
+				resMap.put("error_info", "成功删除分享");
+			} else {
+				resMap.put("error_no", "-1");
+				resMap.put("error_info", "删除分享失败");
+			}
+		} else {
+			resMap.put("error_no", "1");
+			resMap.put("error_info", "密码错误，没有删除权限");
+		}
+
+		jsonString = JSON.toJSONString(resMap);
+		return jsonString.getBytes();
 	}
 }

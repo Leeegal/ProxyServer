@@ -111,6 +111,39 @@ public class UserDao {
 		return true;
 	}
 	
+	public boolean deleteFile(String id, String fileName) {
+		String sqlStr = " DELETE FROM file WHERE id =? and fileName=? ";
+		try {
+			jdbcTemplate.update(sqlStr, new Object[] { id, fileName });
+		} catch (Exception e) {
+			return false;
+		}
+		
+		return deleteRk(id, fileName);
+	}
+	
+	public boolean deleteRk(String author, String fileName) {
+		String sqlStr = " DELETE FROM rk WHERE author =? and fileName=? ";
+		
+		try {
+			jdbcTemplate.update(sqlStr, new Object[] { author, fileName });
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean deleteRk(String author, String receiver, String fileName) {
+		String sqlStr = " DELETE FROM rk WHERE author =? and receiver=? and fileName=? ";
+		
+		try {
+			jdbcTemplate.update(sqlStr, new Object[] { author, receiver, fileName });
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
 	public List<FileVo> findAllFilesForUser(String id) {
 		String sqlStr = "SELECT * FROM file WHERE id =? ";
 		final List<FileVo> list = new ArrayList<FileVo>();

@@ -78,6 +78,14 @@ public class UserService {
 		return true;
 	}
 	
+	public boolean deleteFile(String id, String fileName) {
+		return userDao.deleteFile(id, fileName);
+	}
+	
+	public boolean deleteShare(String author, String receiver, String fileName) {
+		return userDao.deleteRk(author, receiver, fileName);
+	}
+	
 	public List<FileVo> allFilesForUser(String id) {
 		return userDao.findAllFilesForUser(id);
 	}
